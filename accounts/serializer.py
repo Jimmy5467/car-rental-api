@@ -62,6 +62,7 @@ class RegisterSerializer(serializers.Serializer):
         # setup_user_email(request, user, [])
         #return user
 
+
 class UserDetailsSerializer(serializers.ModelSerializer):
     """
     User model w/o password
