@@ -28,7 +28,7 @@ class RegisterAPI(generics.GenericAPIView):
                 token = Token.objects.create(user=user)
                 json = serializer.data
                 json['token'] = token.key
-                return Response(json, status=status.HTTP_201_CREATED)
+                return Response({'id': user.id, 'username': user.username, 'email': user.email, 'token': json}, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # def post(self, request, *args, **kwargs):

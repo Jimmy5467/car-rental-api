@@ -33,10 +33,8 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=250, unique=True,
-                                error_messages={"unique": "The username you enetered is not unique."})
-    email = models.EmailField(max_length=250, unique=True,
-                              error_messages={"unique": "The email you enetered is not unique."})
+    username = models.CharField(max_length=250, unique=True, error_messages={"unique": "The username you enetered is not unique."})
+    email = models.EmailField(max_length=250, unique=True, error_messages={"unique": "The email you enetered is not unique."})
     phone = models.CharField(max_length=10, null=True)  # , unique=True
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)

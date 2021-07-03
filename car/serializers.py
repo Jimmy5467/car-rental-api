@@ -18,6 +18,9 @@ class CarRegisterSerializer(serializers.ModelSerializer):
 
 
 class BookCarSerializer(serializers.ModelSerializer):
+    renterId = serializers.PrimaryKeyRelatedField(read_only=True)
+    payment_status = serializers.FloatField(read_only=True)
+    renter_phone = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Booked
@@ -32,6 +35,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
 
 class CancelSerializer(serializers.ModelSerializer):
+    renterId = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Cancel
@@ -39,6 +43,7 @@ class CancelSerializer(serializers.ModelSerializer):
 
 
 class ShowCarSerializer(serializers.ModelSerializer):
+    renterId = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Car

@@ -6,8 +6,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import status
 from .models import Car, Cancel, Feedback, Booked
-from .serializers import ShowCarSerializer, CarRegisterSerializer, BookCarSerializer, FeedbackSerializer, \
-    CancelSerializer
+from .serializers import ShowCarSerializer, CarRegisterSerializer, BookCarSerializer, FeedbackSerializer, CancelSerializer
 from rest_framework.permissions import IsAuthenticated
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,14 +16,13 @@ from rest_framework.filters import OrderingFilter
 # Create your views here.
 class CarRegister(APIView):
     serializer_class = CarRegisterSerializer
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        user = request.user.id
-        print(user)
+        user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            serializer.data['ownerId'] = user
-            car = serializer.save()
+            car = serializer.save(ownerId=user)
             if car:
                 return Response({'Car registered. You can check by login again.'}, status=status.HTTP_201_CREATED)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -35,9 +33,10 @@ class BookCar(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            car = serializer.save()
+            car = serializer.save(renterId=user, renter_phone=user.phone)
             if car:
                 return Response({'Car Booking done.'}, status=status.HTTP_201_CREATED)
 
@@ -60,12 +59,13 @@ class FeedbackCar(APIView):
 
 class CancelBookedCar(APIView):
     serializer_class = CancelSerializer
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            car = serializer.save()
+            car = serializer.save(renterId=user)
+            print(serializer)
             if car:
                 return Response({'Booking canceled.'}, status=status.HTTP_201_CREATED)
 
