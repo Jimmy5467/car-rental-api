@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'rest_framework.authtoken',
     'django.contrib.sites',
+    'django_filters',
     'knox',
     'allauth',
     'allauth.account',
@@ -140,6 +141,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
         'rest_framework.permissions.IsAdminUser',
     ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend', ]
 }
 
 SITE_ID = 1

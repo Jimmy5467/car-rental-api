@@ -18,11 +18,12 @@ def content_file_name(instance, filename):
 class Car(models.Model):
     ownerId = models.ForeignKey(User, on_delete=models.CASCADE)  # ownerId = models.IntegerField()
     company = models.CharField(max_length=128, null=True, blank=True)
+    car_model_name = models.CharField(max_length=128, null=True, blank=True)
     seats = models.IntegerField(default=4, validators=[MaxValueValidator(10), MinValueValidator(1)])
     car_type = models.CharField(max_length=128,null=True, blank=True)
     fuel = models.CharField(max_length=16, null=True, blank=True)
     rent = models.FloatField(null=True, blank=True)
-    number_plate = models.CharField(max_length=16, unique=True, error_messages={'unique': 'The car exist in database already.'})
+    number_plate = models.CharField(max_length=16, unique=True, error_messages={'unique': 'Car exist in database already.'})
     issue = models.TextField(max_length=256, error_messages={'max_length': 'message length must be less then 250'},
                              null=True, blank=True)
     city = models.CharField(max_length=64, null=True, blank=True)
@@ -43,6 +44,7 @@ class Car(models.Model):
 
 class Booked(models.Model):
     carId = models.ForeignKey(Car, on_delete=models.CASCADE)  # carId = models.IntegerField()
+    car_model_name = models.CharField(max_length=128, null=True, blank=True)
     ownerId = models.ForeignKey(User, on_delete=models.CASCADE, related_name='s_ownerId')
     renterId = models.ForeignKey(User, on_delete=models.CASCADE, related_name='s_renterId')
     payable_amount = models.FloatField()

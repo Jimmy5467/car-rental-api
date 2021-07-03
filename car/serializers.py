@@ -4,12 +4,12 @@ from accounts.models import User
 
 
 class CarRegisterSerializer(serializers.ModelSerializer):
-    # ownerId = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+    ownerId = serializers.PrimaryKeyRelatedField(read_only=True)
     # ownerId = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Car
-        fields = ['ownerId', 'company', 'seats', 'car_type', 'fuel', 'rent', 'number_plate', 'issue', 'city', 'pickup_address',
+        fields = ['ownerId', 'company', 'car_model_name', 'seats', 'car_type', 'fuel', 'rent', 'number_plate', 'issue', 'city', 'pickup_address',
                   'drop_address', 'available_from', 'availability_ends', 'rc_number', 'AC', 'AorM', 'front_image', 'back_image']
 
     # def save(self, **kwargs):
@@ -36,3 +36,10 @@ class CancelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cancel
         fields = "__all__"
+
+
+class ShowCarSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Car
+        fields = '__all__'
