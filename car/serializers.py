@@ -18,6 +18,7 @@ class CarRegisterSerializer(serializers.ModelSerializer):
 
 
 class BookCarSerializer(serializers.ModelSerializer):
+    renterId = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Booked
@@ -32,6 +33,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
 
 class CancelSerializer(serializers.ModelSerializer):
+    renterId = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Cancel

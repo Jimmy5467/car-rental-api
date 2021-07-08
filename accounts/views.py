@@ -8,11 +8,13 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status
 from knox.views import LoginView as KnoxLoginView
 from django.contrib.auth.models import User
-from .serializer import RegisterSerializer, UserSerializer, ChangePasswordSerializer
+from .serializer import RegisterSerializer, UserSerializer, ChangePasswordSerializer, LogoutSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken ,OutstandingToken, BlacklistedToken
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -28,7 +30,7 @@ class RegisterAPI(generics.GenericAPIView):
                 token = Token.objects.create(user=user)
                 json = serializer.data
                 json['token'] = token.key
-                return Response(json, status=status.HTTP_201_CREATED)
+                return Response({'id': user.id, 'username': user.username, 'email': user.email, 'token': json}, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # def post(self, request, *args, **kwargs):
@@ -50,23 +52,67 @@ class LoginAPI(KnoxLoginView):
         login(request, user)
         return super(LoginAPI, self).post(request, format=None)
 
+#
+# class LogoutAPI(APIView):
+#     permission_classes = (permissions.IsAuthenticated,)
+#
+#     def get(self, request, format=None):
+#         # simply delete the token to force a login
+#         print(request.user.Bearer)
+#         if request.user.Bearer:
+#             request.user.Bearer.delete()
+#             return Response({"Logout Done."}, status=status.HTTP_200_OK)
+#         else:
+#             return Response({"No token found."})
+#
+#
+# class LogoutView(APIView):
+#     permission_classes = (IsAuthenticated,)
+#
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data["refresh_token"]
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#
+#             return Response(status=status.HTTP_205_RESET_CONTENT)
+#         except Exception as e:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-class LogoutAPI(APIView):
+
+class LogoutAPIView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request, format=None):
-        # simply delete the token to force a login
-        request.user.auth_token.delete()
-        return Response(status=status.HTTP_200_OK)
+    def post(self, request):
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ChangePasswordView(generics.UpdateAPIView):
+class LogoutAllView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        tokens = OutstandingToken.objects.filter(user_id=request.user.id)
+        for token in tokens:
+            t, _ = BlacklistedToken.objects.get_or_create(token=token)
+
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+
+
+class ChangePasswordView(generics.GenericAPIView):
     """
     An endpoint for changing password.
     """
     serializer_class = ChangePasswordSerializer
     model = User
     permission_classes = (IsAuthenticated,)
+    # authentication_classes = (TokenAuthentication,)
 
     def get_object(self, queryset=None):
         obj = self.request.user

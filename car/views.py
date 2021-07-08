@@ -6,12 +6,39 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import status
 from .models import Car, Cancel, Feedback, Booked
-from .serializers import ShowCarSerializer, CarRegisterSerializer, BookCarSerializer, FeedbackSerializer, \
-    CancelSerializer
-from rest_framework.permissions import IsAuthenticated
+from .serializers import ShowCarSerializer, CarRegisterSerializer, BookCarSerializer, FeedbackSerializer, CancelSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
+from rest_framework.generics import ListAPIView
+from django.db.models import Q
+import datetime
+
+
+class CarFilter(filters.FilterSet):
+    # company = filters.CharFilter(lookup_expr='icontains')
+    # car_model_name = filters.CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = Car
+        fields = {                      # iexact
+            'company': ['icontains'],
+            'car_model_name': ['icontains'],
+            'city': ['icontains'],
+            'seats': ['lte', 'gte'],
+            'rent': ['lte', 'gte'],
+
+        }
+
+
+class CarList(ListAPIView):
+    today = datetime.datetime.today()
+    queryset = Car.objects.filter(Q(availability_ends__gte=today) & Q(available_from__lte=today))
+    permission_classes = (AllowAny,)
+    serializer_class = ShowCarSerializer
+    filterset_class = CarFilter
+    # filter_fields = ['company']
 
 
 # Create your views here.
@@ -19,14 +46,12 @@ class CarRegister(APIView):
     serializer_class = CarRegisterSerializer
 
     def post(self, request):
-        user = request.user.id
-        print(user)
+        user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            serializer.data['ownerId'] = user
-            car = serializer.save()
+            car = serializer.save(ownerId=user)
             if car:
-                return Response({'Car registered. You can check by login again.'}, status=status.HTTP_201_CREATED)
+                return Response({'id': car.id, 'number_plate': car.number_plate, 'model': car.car_model_name, 'message' : 'Car Registered'}, status=status.HTTP_201_CREATED)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -35,11 +60,12 @@ class BookCar(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            car = serializer.save()
+            car = serializer.save(renterId=user)
             if car:
-                return Response({'Car Booking done.'}, status=status.HTTP_201_CREATED)
+                return Response({'car id': car.id, 'message': 'Car Booked '}, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -63,14 +89,34 @@ class CancelBookedCar(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            car = serializer.save()
+            car = serializer.save(renterId=user)
             if car:
                 return Response({'Booking canceled.'}, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class MyCarList(ListAPIView):
+    queryset = Car.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ShowCarSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Car.objects.filter(ownerId=user)
+
+
+class MyRentedCarList(ListAPIView):
+    # queryset = Booked.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = BookCarSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Booked.objects.filter(renterId=user)
 
 # class CarFilter(filters.FilterSet):
 #

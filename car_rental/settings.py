@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'allauth.socialaccount',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
     'django.contrib.sites',
     'django_filters',
     'knox',
@@ -133,8 +135,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        #'knox.auth.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'knox.auth.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': (
         #'rest_framework.permission.IsAuthenticated',
@@ -148,6 +150,12 @@ SITE_ID = 1
 
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'accounts.serializer.UserDetailsSerializer'
+}
+
+SIMPLE_JWT = {
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True
 }
 
 ACCOUNT_EMAIL_REQUIRED = False
