@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from allauth.account.adapter import get_adapter
-from .models import User, UserManager
+from .models import User, UserManager, Photo
 from allauth.account.utils import setup_user_email
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
@@ -103,3 +103,11 @@ class LogoutSerializer(serializers.Serializer):
 
         except TokenError:
             self.fail('bad_token')
+
+
+class PhotoSerializer(serializers.ModelSerializer):
+    UserId = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Photo
+        fields = ['UserId', 'photo']

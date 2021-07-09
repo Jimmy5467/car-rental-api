@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
-from .views import RegisterAPI,LoginAPI,ChangePasswordView, LogoutAllView, LogoutAPIView
+from .views import RegisterAPI,LoginAPI,ChangePasswordView, LogoutAllView, LogoutAPIView, PhotoView
 from knox import views as knox_views
 from rest_framework_simplejwt import views as jwt_views
 
 urlpatterns = [
+    path('photo/', PhotoView.as_view(), name='photo'),
     path('register/', RegisterAPI.as_view(), name='register'),
     path('login/', jwt_views.TokenObtainPairView.as_view(), name='login'),
     path('login/refresh/', jwt_views.TokenRefreshView.as_view(), name='refresh'),

@@ -8,13 +8,14 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status
 from knox.views import LoginView as KnoxLoginView
 from django.contrib.auth.models import User
-from .serializer import RegisterSerializer, UserSerializer, ChangePasswordSerializer, LogoutSerializer
+from .serializer import RegisterSerializer, UserSerializer, ChangePasswordSerializer, LogoutSerializer, PhotoSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
-from rest_framework_simplejwt.tokens import RefreshToken ,OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
+import json
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -30,7 +31,8 @@ class RegisterAPI(generics.GenericAPIView):
                 token = Token.objects.create(user=user)
                 json = serializer.data
                 json['token'] = token.key
-                return Response({'id': user.id, 'username': user.username, 'email': user.email, 'token': json}, status=status.HTTP_201_CREATED)
+                return Response({'id': user.id, 'username': user.username, 'email': user.email, 'token': json},
+                                status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # def post(self, request, *args, **kwargs):
@@ -51,6 +53,7 @@ class LoginAPI(KnoxLoginView):
         user = serializer.validated_data['user']
         login(request, user)
         return super(LoginAPI, self).post(request, format=None)
+
 
 #
 # class LogoutAPI(APIView):
@@ -86,7 +89,6 @@ class LogoutAPIView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -112,6 +114,7 @@ class ChangePasswordView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
     model = User
     permission_classes = (IsAuthenticated,)
+
     # authentication_classes = (TokenAuthentication,)
 
     def get_object(self, queryset=None):
@@ -139,3 +142,27 @@ class ChangePasswordView(generics.GenericAPIView):
             return Response(response)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PhotoView(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PhotoSerializer
+
+    def post(self, request):
+        user = request.user
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            photo = serializer.save(UserId=user)
+            if photo:
+                return Response({'id': photo.id, 'message': 'Photo Added'}, status=status.HTTP_201_CREATED)
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def update(self, request):
+    #     user = request.user
+    #     serializer = self.serializer_class(data=request.data)
+    #     payload = json.loads(request.body)
+    #     if serializer.is_valid():
+    #         photo = serializer.update(**pa
+    #         if photo:
+    #             return Response({'id': photo.id, 'message': 'Photo Updated'}, status=status.HTTP_201_CREATED)
+    #     return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

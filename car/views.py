@@ -14,6 +14,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from django.db.models import Q
 import datetime
+from django.utils import timezone
 
 
 class CarFilter(filters.FilterSet):
@@ -63,7 +64,7 @@ class BookCar(APIView):
         user = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            car = serializer.save(renterId=user)
+            car = serializer.save(renterId=user, booked_on=timezone.now().date())
             if car:
                 return Response({'car id': car.id, 'message': 'Car Booked '}, status=status.HTTP_201_CREATED)
 
@@ -90,9 +91,12 @@ class CancelBookedCar(APIView):
 
     def post(self, request):
         user = request.user
+        Id = request.POST['carId']
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            car = serializer.save(renterId=user)
+        # bookedcar = Booked.objects.filter(carId=Id)
+        if serializer.is_valid() and Id:
+            Booked.objects.filter(carId=Id).delete()
+            car = serializer.save(renterId=user, cancelled_on= timezone.now().date())
             if car:
                 return Response({'Booking canceled.'}, status=status.HTTP_201_CREATED)
 

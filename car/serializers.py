@@ -10,7 +10,7 @@ class CarRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Car
         fields = ['ownerId', 'company', 'car_model_name', 'seats', 'car_type', 'fuel', 'rent', 'number_plate', 'issue', 'city', 'pickup_address',
-                  'drop_address', 'available_from', 'availability_ends', 'rc_number', 'AC', 'AorM', 'front_image', 'back_image']
+                  'drop_address', 'available_from', 'availability_ends',  'AC', 'AorM', 'front_image', 'back_image', 'buying_year', 'mileage' ]
 
     # def save(self, **kwargs):
     #     kwargs["ownerId"] = self.fields["ownerId"].get_default()
@@ -19,6 +19,7 @@ class CarRegisterSerializer(serializers.ModelSerializer):
 
 class BookCarSerializer(serializers.ModelSerializer):
     renterId = serializers.PrimaryKeyRelatedField(read_only=True)
+    booked_on = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Booked
@@ -34,6 +35,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
 class CancelSerializer(serializers.ModelSerializer):
     renterId = serializers.PrimaryKeyRelatedField(read_only=True)
+    cancelled_on = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Cancel
