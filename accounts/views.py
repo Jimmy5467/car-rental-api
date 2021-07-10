@@ -1,21 +1,25 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
+from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
+from .models import Photo, User
 from .serializer import UserDetailsSerializer
 from django.contrib.auth import login
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status
 from knox.views import LoginView as KnoxLoginView
-from django.contrib.auth.models import User
-from .serializer import RegisterSerializer, UserSerializer, ChangePasswordSerializer, LogoutSerializer, PhotoSerializer
+from .serializer import RegisterSerializer, UserSerializer, ChangePasswordSerializer, LogoutSerializer, PhotoSerializer, UserUpdateSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
+from rest_framework import generics, mixins, permissions
 import json
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -42,6 +46,77 @@ class RegisterAPI(generics.GenericAPIView):
     #     return Response({
     #         "user": UserSerializer(user, context=self.get_serializer_context()).data,
     #     })
+
+#
+# class UpdateAndDelete(generics.GenericAPIView):   ####
+#     serializer_class = RegisterSerializer
+#     permission_classes = (permissions.IsAuthenticated,)
+#
+#     def put(self, request):
+#         print(request)
+#         user = request.user
+#         try:
+#             u = User.objects.get(id=user.id)
+#             print(u)
+#             # u = User.objects.get(id=user)
+#         except User.DoesNotExist:
+#             return Response(status=status.HTTP_404_NOT_FOUND)
+#
+#         if request.method == "PUT":
+#             serializer = RegisterSerializer(data=request.data)
+#             data = {}
+#             if serializer.is_valid():
+#                 serializer.save(request)
+#                 data['success'] = "update successful"
+#                 return Response(data=data)
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserIsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.id == request.user.id
+
+
+class UserProfileChangeAPIView(generics.RetrieveAPIView,
+                               mixins.DestroyModelMixin,
+                               mixins.UpdateModelMixin):
+    permission_classes = (
+        permissions.IsAuthenticated,
+        UserIsOwnerOrReadOnly,
+    )
+    serializer_class = UserUpdateSerializer
+
+    def get_queryset(self):
+        user = self.request.user.id
+        return User.objects.filter(id=user)
+    # def get_object(self):
+    #     username = self.kwargs["username"]
+    #     obj = get_object_or_404(User, username=username)
+    #     return obj
+
+    # def delete(self, request, *args, **kwargs):
+    #     return self.destroy(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    # def delete(self, request):
+    #     user = request.user
+    #     try:
+    #         u = User.objects.get(UserId=user)
+    #     except User.DoesNotExist:
+    #         return Response(status=status.HTTP_404_NOT_FOUND)
+    #
+    #     if request.method == "DELETE":
+    #         operation = u.delete()
+    #         data = {}
+    #         if operation:
+    #             data["success"] = "delete successful"
+    #         else:
+    #             data["failure"] = "delete failed"
+    #         return Response(data=data)
 
 
 class LoginAPI(KnoxLoginView):
@@ -155,14 +230,45 @@ class PhotoView(generics.GenericAPIView):
             photo = serializer.save(UserId=user)
             if photo:
                 return Response({'id': photo.id, 'message': 'Photo Added'}, status=status.HTTP_201_CREATED)
-        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "photo already exist in database, you can just update it or delete it."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # def update(self, request):
-    #     user = request.user
-    #     serializer = self.serializer_class(data=request.data)
-    #     payload = json.loads(request.body)
-    #     if serializer.is_valid():
-    #         photo = serializer.update(**pa
-    #         if photo:
-    #             return Response({'id': photo.id, 'message': 'Photo Updated'}, status=status.HTTP_201_CREATED)
-    #     return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request):
+        user = request.user
+        try:
+            u = Photo.objects.get(UserId=user)
+        except Photo.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "PUT":
+            serializer = PhotoSerializer(u, data=request.data)
+            data = {}
+            if serializer.is_valid():
+                serializer.save()
+                data['success'] = "update successful"
+                return Response(data=data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # serializer = self.serializer_class(data=request.data)
+        # payload = json.loads(request.body)
+        # if serializer.is_valid():
+        #     p = Photo.objects.filter(UserId=user)
+        #     photo =
+        #     if photo:
+        #         return Response({'id': photo.id, 'message': 'Photo Updated'}, status=status.HTTP_201_CREATED)
+        # return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        user = request.user
+        try:
+            u = Photo.objects.get(UserId=user)
+        except Photo.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "DELETE":
+            operation = u.delete()
+            data = {}
+            if operation:
+                data["success"] = "delete successful"
+            else:
+                data["failure"] = "delete failed"
+            return Response(data=data)

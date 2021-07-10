@@ -45,6 +45,7 @@ class CarList(ListAPIView):
 # Create your views here.
 class CarRegister(APIView):
     serializer_class = CarRegisterSerializer
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         user = request.user
@@ -54,6 +55,38 @@ class CarRegister(APIView):
             if car:
                 return Response({'id': car.id, 'number_plate': car.number_plate, 'model': car.car_model_name, 'message' : 'Car Registered'}, status=status.HTTP_201_CREATED)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        car = request.car
+        try:
+            u = Car.objects.get(id=car.id)
+        except Car.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "PUT":
+            serializer = CarRegisterSerializer(u, data=request.data)
+            data = {}
+            if serializer.is_valid():
+                serializer.save()
+                data['success'] = "update successful"
+                return Response(data=data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        car = request.car
+        try:
+            u = Car.objects.get(id=car.id)
+        except Car.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "DELETE":
+            operation = u.delete()
+            data = {}
+            if operation:
+                data["success"] = "delete successful"
+            else:
+                data["failure"] = "delete failed"
+            return Response(data=data)
 
 
 class BookCar(APIView):

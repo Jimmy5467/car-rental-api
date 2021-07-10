@@ -11,17 +11,23 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email']
 
 
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['phone', 'city', 'license']
+
+
 class RegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(required=False, write_only=True, )
-    first_name = serializers.CharField(required=False, write_only=True)
-    last_name = serializers.CharField(required=False, write_only=True)
+    username = serializers.CharField(required=True, write_only=True, )
+    # first_name = serializers.CharField(required=False, write_only=True)
+    # last_name = serializers.CharField(required=False, write_only=True)
     email = serializers.EmailField(required=True, write_only=True)
     phone = serializers.CharField(required=True, write_only=True)
     # address = serializers.CharField(required=False, write_only=True)
     password1 = serializers.CharField(required=True, write_only=True)
     password2 = serializers.CharField(required=True, write_only=True)
-    city = serializers.CharField(required=True, write_only=True)
-    license = serializers.CharField(required=True, write_only=True)
+    city = serializers.CharField(required=False, write_only=True)
+    license = serializers.CharField(required=False, write_only=True)
 
     def validate_password1(self, password):
         return get_adapter().clean_password(password)
@@ -37,8 +43,8 @@ class RegisterSerializer(serializers.Serializer):
     def get_cleaned_data(self):
         return {
             'username': self.validated_data.get('username', ''),
-            'first_name': self.validated_data.get('first_name', ''),
-            'last_name': self.validated_data.get('last_name', ''),
+            # 'first_name': self.validated_data.get('first_name', ''),
+            # 'last_name': self.validated_data.get('last_name', ''),
             'password1': self.validated_data.get('password1', ''),
             'email': self.validated_data.get('email', ''),
             'phone': self.validated_data.get('phone', ''),
@@ -63,6 +69,8 @@ class RegisterSerializer(serializers.Serializer):
         # setup_user_email(request, user, [])
         #return user
 
+    # def update(self, instance, validated_data):
+
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     """
@@ -71,7 +79,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('pk', 'username', 'email', 'phone', 'first_name', 'last_name', 'city', 'license')
+        fields = ('pk', 'username', 'email', 'phone', 'city', 'license')   # 'first_name', 'last_name',
         read_only_fields = ('email',)
 
 

@@ -59,16 +59,16 @@ class User(AbstractBaseUser, PermissionsMixin):
                                 error_messages={"unique": "The username you enetered is not unique."})
     email = models.EmailField(max_length=250, unique=True,
                               error_messages={"unique": "The email you enetered is not unique."})
-    phone = models.CharField(max_length=10, null=True)  # , unique=True
-    first_name = models.CharField(max_length=30, blank=True, null=True)  ##
-    last_name = models.CharField(max_length=30, blank=True, null=True)  ##
+    phone = models.CharField(max_length=10, null=True, blank=True)  # , unique=True
+    # first_name = models.CharField(max_length=30, blank=True, null=True)  ##
+    # last_name = models.CharField(max_length=30, blank=True, null=True)  ##
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     receive_newsletter = models.BooleanField(default=False)
     city = models.CharField(max_length=30, blank=True, null=True)
-    license = models.CharField(max_length=15)
+    license = models.CharField(max_length=15, blank=True, null=True)
     # time in just day format
     # username = models.CharField(_('password'), max_length=128, unique=True)
     # email = models.EmailField(_('email address'), max_length=128, unique=True)
