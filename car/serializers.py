@@ -20,6 +20,14 @@ class CarRegisterSerializer(serializers.ModelSerializer):
 class BookCarSerializer(serializers.ModelSerializer):
     renterId = serializers.PrimaryKeyRelatedField(read_only=True)
     booked_on = serializers.PrimaryKeyRelatedField(read_only=True)
+    carId = serializers.PrimaryKeyRelatedField(read_only=True)
+    company = serializers.PrimaryKeyRelatedField(read_only=True)
+    car_model_name = serializers.PrimaryKeyRelatedField(read_only=True)
+    ownerId = serializers.PrimaryKeyRelatedField(read_only=True)
+    # payment_status = models.BooleanField(default=False, null=True, blank=True) ##
+    address = serializers.PrimaryKeyRelatedField(read_only=True)
+    owner_phone = serializers.PrimaryKeyRelatedField(read_only=True)
+    renter_phone = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Booked
@@ -36,6 +44,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 class CancelSerializer(serializers.ModelSerializer):
     renterId = serializers.PrimaryKeyRelatedField(read_only=True)
     cancelled_on = serializers.PrimaryKeyRelatedField(read_only=True)
+    # bookId = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Cancel

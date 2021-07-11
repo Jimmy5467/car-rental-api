@@ -11,9 +11,10 @@ urlpatterns = [
     path('', views.CarList.as_view(), name='home'),
     path('mycar/', views.MyCarList.as_view(), name='mycar'),
     path('myrentedcar/', views.MyRentedCarList.as_view(), name='myrentedcar'),
+    path('update/<int:car>/', views.CarUpdate.as_view(), name='update'),
     path('register/', views.CarRegister.as_view(), name='register'),
-    path('bookcar/', views.BookCar.as_view(), name='bookcar'),
+    path('bookcar/<int:carid>/', views.BookCar.as_view(), name='bookcar'),
     path('feedback/', views.FeedbackCar.as_view(), name='feedback'),
-    path('cancel/', views.CancelBookedCar.as_view(), name='cancel'),
+    path('cancel/<int:bookid>/', views.CancelBookedCar.as_view(), name='cancel'),
 
 ]

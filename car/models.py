@@ -84,8 +84,9 @@ class Booked(models.Model):
     end_date = models.DateField()
     booked_on = models.DateField()  ###
     # payment_status = models.BooleanField(default=False, null=True, blank=True) ##
-    # owner_phone = models.CharField(max_length=10) ##
-    # renter_phone = models.CharField(max_length=10)##
+    address = models.TextField(null=True, blank=True)
+    owner_phone = models.CharField(max_length=10, default=None) ##
+    renter_phone = models.CharField(max_length=10, default=None)##
 
     # journey_status = models.BooleanField()
 
@@ -99,5 +100,5 @@ class Feedback(models.Model):
 class Cancel(models.Model):  # full on backend side
     renterId = models.ForeignKey(User, on_delete=models.CASCADE)
     cancelled_on = models.DateField()
-    carId = models.ForeignKey(Car, on_delete=models.CASCADE)
+    # bookId = models.ForeignKey(Booked, on_delete=models.CASCADE, default=1)
     # # # # # # #
